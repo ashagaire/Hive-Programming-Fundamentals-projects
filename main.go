@@ -1,16 +1,14 @@
 package main
 import ( "fmt"
-"encoding/csv"
-"reflect"
-// "path/filepath"
-"bufio"
-"io"
-"strings"
-"regexp"
+		"encoding/csv"
+		"reflect"
+		"bufio"
+		"io"
+		"strings"
+		"regexp"
 		"os") 
 
 func main(){
-
 	if len(os.Args) !=4 || os.Args[1] == "-h" {
 		fmt.Println("itinerary usage:\n go run . ./input.txt ./output.txt ./airport-lookup.csv")
  		return
@@ -34,17 +32,12 @@ func main(){
 		fmt.Println("Airport lookup malformed\n")
 			return 
 		}
-
 	fmt.Println("Welcome to Itinerary Formator App!!!\n")
-	// createOutputFile(outputFilePath)
-	processInputFile(inputFilePath, outputFilePath)
 
-	//now scan the input file and write output file
-
+	processInputFile(inputFilePath, outputFilePath, lookupFilePath)
 }
 
-func processInputFile(inputFilePath string, outputFilePath string) {
-
+func processInputFile(inputFilePath string, outputFilePath string, lookupFilePath string) {
 	// verify input file
 	inputFile, err := os.Open(inputFilePath)
 	if err != nil {
@@ -64,7 +57,6 @@ func processInputFile(inputFilePath string, outputFilePath string) {
 
 	writer := bufio.NewWriter(outputFile)
 	defer writer.Flush()
-
 
 	// read the file and save in reader
 	reader := bufio.NewReader(inputFile)
@@ -91,23 +83,19 @@ func processInputFile(inputFilePath string, outputFilePath string) {
 		lines := strings.Split(normalized, "\n")
 
 		for _, line := range lines {
-			// fmt.Println("unformatedLine:", line)
-		// Step 1: Transformations for airport code.
-		line = convertAirportCodes(line)
+			// Step 1: Transformations for airport code.
+			line = convertAirportCodes(line, lookupFilePath)
 
-		// Step 2: Transformations foor dates
-        // line = formatDates(line)
+			// Step 2: Transformations foor dates
+			// line = formatDates(line)
 
-		// Step 3: Write to output.txt
-        writer.WriteString(line + "\n")
+			// Step 3: Write to output.txt
+			writer.WriteString(line + "\n")
 		}
-		
-        
 	}
-	
 }
 
-func convertAirportCodes(text string) string {
+func convertAirportCodes(text string, lookupFilePath string) string {
 	//if word match with any regex find the replace word from csv column
 	//replace the word with new replacement 
 	icaoRegex := regexp.MustCompile(`^#([A-Z]{3})([^A-Za-z0-9]|$)`)
@@ -118,41 +106,64 @@ func convertAirportCodes(text string) string {
 	
 	words := strings.Fields(text)
 	for i , word := range words{
+
 		if icaoRegex.MatchString(word) {
-			words[i] = cleanAirportCode(word, "#", 3)
-		}
-		if iataRegex.MatchString(word) {
-			words[i] = cleanAirportCode(word, "##", 4)
+			words[i] =  cleanAirportCode(word, "#", 3, lookupFilePath)
 		}
 
+		if iataRegex.MatchString(word) {
+			words[i] =  cleanAirportCode(word, "##", 4, lookupFilePath)
+		}
 	}
-	formatedLine := strings.Join(words, " ")
-	return formatedLine
+	return strings.Join(words, " ")
 }
 
-func cleanAirportCode(word string, prefix string, length int) string {
+func cleanAirportCode(word string, prefix string, length int, lookupFilePath string) string {
 	word = strings.TrimPrefix(word, prefix)
 	code := word[:length]
 
+	// find airport name from lookupp file
+	airportName := GetNameFromAirportLookup(code, lookupFilePath)
+	//in case the code is not found and we keep the lookup code s it is in putput file
+	if code == airportName {
+		return ("##"+code+word[length:])
+	}
+	return airportName+word[length:]
+}
 
-	fmt.Println("the only code from IcaoLookup code", code)
-	// find airport name from lookup
+func GetNameFromAirportLookup(code string, lookupFilePath string) string {
+	airportLookup, err := os.Open(lookupFilePath)
+	if err != nil {
+		fmt.Println("Airport lookup malformed\n")
+			return code
+	}
+	//defer to close file and prevent resource leaks, no need to do f.Close() later
+	defer airportLookup.Close()
 
+	//csv.NewReader to read csv files
+	airportLookupReader := csv.NewReader(airportLookup)
+
+	records, err1 := airportLookupReader.ReadAll()
+	if err1 != nil {
+		fmt.Println("Airport lookup malformed\n")
+			return code
+	}
+
+	//loop every records, make a array details with values in each record
+	for i:=1; i< len(records)-1; i++ {
+		for _, details := range records{
+	// details := strings.Split(records[i], ",")
+			// compare with each value with current record
+			for _, data := range details {
+				if data == code {
+					return details[0]
+				}
+			}
+		}
+		
+	}
 	return code
 }
-
-func cleanLineBreakChars(textLine string) string {
-	// replace the different space types like \v, \f, \r
-	// Using NewReplacer because it  reads through the text in  single pass and only allocates memory once which is more efficient than
-	// calling strings.Replace which will read file searching for for every character type we want to swap seperately, multiple times.
-
-	replacer := strings.NewReplacer("\v", "\n", "\f", "\n", "\r", "\n")
-	result := replacer.Replace(textLine)
-	return result
-
-}
-
-
 
 
 //TODO functions
@@ -178,9 +189,8 @@ func cleanLineBreakChars(textLine string) string {
 
 
 
-	//handeling error with error type
+//handeling error with error type
 func ScanInputs(inputFile string, lookupFile string) error {
-
 	//os.Stat() retrives information about the file or directory
 	_, err1 := os.Stat(inputFile)
 	if err1 != nil {
@@ -193,12 +203,9 @@ func ScanInputs(inputFile string, lookupFile string) error {
 	}
 
 	return nil
-
 }
 
 func ScanAirportLookup(lookupFile string) bool {
-	// in csv file if any column in the lookup is corrupted, missing or blank display "Airport lookup malformed"
-
 	indexes := []string{"name", "iso_country","municipality", "icao_code", "iata_code", "coordinates"}
 
 	airportLookup, err := os.Open(lookupFile)
@@ -211,15 +218,13 @@ func ScanAirportLookup(lookupFile string) bool {
 	//csv.NewReader to read csv files
 	airportLookupReader := csv.NewReader(airportLookup)
 
-	//data seperator
-	// reader.Comma = '-'
 	records, err1 := airportLookupReader.ReadAll()
 	if err1 != nil {
 		return false
 	}
 
-	checkColumns := CheckIndexRow(indexes,records[0])
-	if checkColumns == false {
+	//comparing two string slices with reflect library
+	if !reflect.DeepEqual(indexes, records[0]) {
 		return false
 	}
 
@@ -229,16 +234,10 @@ func ScanAirportLookup(lookupFile string) bool {
 	}
 
 	return true
-
-}
-
-func CheckIndexRow(indexes []string, firstRow []string) bool{
-	//comparing two string slices with reflect library
-	return reflect.DeepEqual(indexes, firstRow)
 }
 
 func CheckCsvFileValues( records [][]string) bool {
-	//loop through each row
+	//loop through each row if any data missing
 	for _, row:= range records {
 			if len(row) != 6 {
 			return false
@@ -252,18 +251,12 @@ func CheckCsvFileValues( records [][]string) bool {
 	return true
 }
 
-// func createOutputFile(outputFilePath string) (*os.File, error ) {
-// 	//get oly file name from outputFilePath if we are supposed to always create output file in root folder
-// 	// fileName := filepath.Base(outputFilePath)
+func cleanLineBreakChars(textLine string) string {
+	// replace the different space types like \v, \f, \r
+	// Using NewReplacer because it  reads through the text in  single pass and only allocates memory once which is more efficient than
+	// calling strings.Replace which will read file searching for for every character type we want to swap seperately, multiple times.
 
-// 	//File Permissions 6:(Owner): Can Read and Write, 4:(Group): Can Read only, 4:(Others): Can Read only.
-// 	file, err := os.OpenFile(outputFilePath, os.O_CREATE | os.O_RDWR, 0644) 
-
-// 	if err != nil {
-// 		fmt.Println("Error in creating output file\n")
-// 		return nil, err
-// 	}
-
-// 	defer file.Close()
-// 	fmt.Println("Output file created and closed\n")
-// }
+	replacer := strings.NewReplacer("\v", "\n", "\f", "\n", "\r", "\n")
+	result := replacer.Replace(textLine)
+	return result
+}
