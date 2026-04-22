@@ -6,6 +6,7 @@ import ( "fmt"
 		"io"
 		"strings"
 		"regexp"
+		"strconv"
 		"os") 
 
 func main(){
@@ -100,7 +101,7 @@ func convertAirportCodes(text string, lookupFilePath string) string {
 	//replace the word with new replacement 
 	icaoRegex := regexp.MustCompile(`^#([A-Z]{3})([^A-Za-z0-9]|$)`)
 	iataRegex := regexp.MustCompile(`^##([A-Z]{4})([^A-Za-z0-9]|$)`)
-	// dateRegex := regexp.MustCompile(`^#`)
+	dateRegex := regexp.MustCompile(`^D\([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}Z\)$`)
 	// time12Regex := regexp.MustCompile(`^#`)
 	// time24Regex := regexp.MustCompile(`^#`)
 	
@@ -114,9 +115,42 @@ func convertAirportCodes(text string, lookupFilePath string) string {
 		if iataRegex.MatchString(word) {
 			words[i] =  cleanAirportCode(word, "##", 4, lookupFilePath)
 		}
+
+		if dateRegex.MatchString(word) {
+			words[i] = cleanDateFormat(word)
+		}
 	}
 	return strings.Join(words, " ")
 }
+
+func cleanDateFormat(word string) string {
+	isValid:= true
+	year := word[2:6]
+	month,err1 := strconv.Atoi(word[7:9])
+	if err1!= nil {
+		isValid = false
+	}
+	day,err2 := strconv.Atoi(word[10:12])
+	if err2!= nil {
+		isValid = false
+	}
+	if month >12 {
+		isValid = false
+	}
+	if day > 32 {
+		isValid = false
+	}
+
+	if !isValid {
+		return word
+	}
+	fmt.Println("year:", year," month:", month," day:",day)
+	date:= year+" "+strconv.Itoa(month)+" "+strconv.Itoa(day)
+
+	return (date)
+
+}
+
 
 func cleanAirportCode(word string, prefix string, length int, lookupFilePath string) string {
 	word = strings.TrimPrefix(word, prefix)
