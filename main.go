@@ -91,10 +91,32 @@ func processInputFile(inputFilePath string, outputFilePath string, lookupFilePat
 			// line = formatDates(line)
 
 			// Step 3: Write to output.txt
+			fmt.Println(line,"\n")
 			writer.WriteString(line + "\n")
 		}
 	}
 }
+
+//TODO functions
+// for airport code in input.txt find row with that code in respetiive code column in csv file, if not found keep as it is
+// if D(2007-04-05T12:30−02:00) found in input.txt output date in DD-Mmm-YYYY format
+// if T12(2007-04-05T12:30−02:00)  found in input.txt output 12:30PM (-02:00)
+// if T24(2007-04-05T12:30−02:00) found in input.txt output 12:30 (-02:00)
+//  if there is "Z" after "T" in T12:30−02:00 then  show (+00:00)
+// if the line after a blank line is also blank then remove it ans break the reading loop
+
+// TODO output file 
+// TO replace the different space types like \v, \f, \r
+// Using NewReplacer because it  reads through the text in  single pass and only allocates memory once
+//  which is more efficient than calling strings.Replace which will read file searching for for every character type we want to swap seperately, multiple times.
+// replacer := strings.NewReplacer("\v", "\n", "\f", "\n", "\r", "\n")
+// result := replacer.Replace(content)
+
+//TO clean multile empty lines
+//  Using Regex to find 2 or more newlines and replace them with just 2.
+// syntax is x{n,} find matiching x but n times or more x, in this case x= '\n' and replacing x{n,} with '\n\n'
+	// re := regexp.MustCompile(`\n{2,}`)
+	// finalResult := re.ReplaceAllString(normalized, "\n\n")
 
 func convertAirportCodes(text string, lookupFilePath string) string {
 	//if word match with any regex find the replace word from csv column
@@ -126,6 +148,8 @@ func convertAirportCodes(text string, lookupFilePath string) string {
 func cleanDateFormat(word string) string {
 	isValid:= true
 	year := word[2:6]
+	dayStr:= ""
+	shortMonthNames := []string{ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", }
 	month,err1 := strconv.Atoi(word[7:9])
 	if err1!= nil {
 		isValid = false
@@ -141,16 +165,20 @@ func cleanDateFormat(word string) string {
 		isValid = false
 	}
 
+	monthName := shortMonthNames[month-1]
+	if day < 10 {
+		dayStr = fmt.Sprintf("%02d", day)
+	} else {
+		dayStr = strconv.Itoa(day)
+	}
+
 	if !isValid {
 		return word
 	}
-	fmt.Println("year:", year," month:", month," day:",day)
-	date:= year+" "+strconv.Itoa(month)+" "+strconv.Itoa(day)
-
+	// fmt.Println("year:", year," month:", monthName," day:",dayStr, "\n")
+	date:= dayStr+" "+ monthName +" "+ year
 	return (date)
-
 }
-
 
 func cleanAirportCode(word string, prefix string, length int, lookupFilePath string) string {
 	word = strings.TrimPrefix(word, prefix)
@@ -198,30 +226,6 @@ func GetNameFromAirportLookup(code string, lookupFilePath string) string {
 	}
 	return code
 }
-
-
-//TODO functions
-// for airport code in input.txt find row with that code in respetiive code column in csv file, if not found keep as it is
-// if D(2007-04-05T12:30−02:00) found in input.txt output date in DD-Mmm-YYYY format
-// if T12(2007-04-05T12:30−02:00)  found in input.txt output 12:30PM (-02:00)
-// if T24(2007-04-05T12:30−02:00) found in input.txt output 12:30 (-02:00)
-//  if there is "Z" after "T" in T12:30−02:00 then  show (+00:00)
-// if the line after a blank line is also blank then remove it ans break the reading loop
-
-// TODO output file 
-// TO replace the different space types like \v, \f, \r
-// Using NewReplacer because it  reads through the text in  single pass and only allocates memory once
-//  which is more efficient than calling strings.Replace which will read file searching for for every character type we want to swap seperately, multiple times.
-// replacer := strings.NewReplacer("\v", "\n", "\f", "\n", "\r", "\n")
-// result := replacer.Replace(content)
-
-//TO clean multile empty lines
-//  Using Regex to find 2 or more newlines and replace them with just 2.
-// syntax is x{n,} find matiching x but n times or more x, in this case x= '\n' and replacing x{n,} with '\n\n'
-	// re := regexp.MustCompile(`\n{2,}`)
-	// finalResult := re.ReplaceAllString(normalized, "\n\n")
-
-
 
 //handeling error with error type
 func ScanInputs(inputFile string, lookupFile string) error {
