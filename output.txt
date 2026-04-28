@@ -1,7 +1,9 @@
-Your flight departs from Hannover Airport, and your destination is Bremen Airport.
+Your flight departs from Hongyuan Airport Aba, and your destination is Honiara International Airport Honiara on D(2022-05-09T08:07Z).
 
-09 May 2022
+Departure : 07:18PM (-02:00)
+Arrival : 04:08 (+13:00)
 
+Test Time:
 07:18PM (-02:00)
 02:54PM (+00:00)
 03:30AM (+11:00)

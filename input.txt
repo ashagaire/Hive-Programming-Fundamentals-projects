@@ -1,11 +1,10 @@
-Your flight departs from #HAJ, and your destination is ##EDDW.
+Your flight departs from #AHJ, and your destination is ##AGGH on D(2022-05-09T08:07Z).
+
+Departure : T12(2026-04-24T19:18-02:00)
+Arrival : T24(2026-04-25T04:08+13:00)
 
 
-
-D(2022-05-09T08:07Z)
-
-
-
+Test Time:
 T12(2069-04-24T19:18-02:00)
 T12(2080-05-04T14:54Z)
 T12(1980-02-17T03:30+11:00)

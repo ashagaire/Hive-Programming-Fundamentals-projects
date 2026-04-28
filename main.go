@@ -154,22 +154,22 @@ func cleanDateFormat(word string) string {
 
 func cleanAirportCode(word string, prefix string, length int, lookupFilePath string) string {
 	word = strings.TrimPrefix(word, prefix)
-	code := word[:length]
+	code := word[:length] //any sign or delimeters afte the airport code from original text
 
 	// find airport name from lookupp file
-	airportName := GetNameFromAirportLookup(code, lookupFilePath)
-	//in case the code is not found and we keep the lookup code s it is in putput file
+	airportName, cityName := GetNameFromAirportLookup(code, lookupFilePath)
+	//in case the code is not found and we keep the lookup code as it is in putput file
 	if code == airportName {
 		return ("##"+code+word[length:])
 	}
-	return airportName+word[length:]
+	return airportName+ " "+ cityName+ word[length:]
 }
 
-func GetNameFromAirportLookup(code string, lookupFilePath string) string {
+func GetNameFromAirportLookup(code string, lookupFilePath string) (string, string) {
 	airportLookup, err := os.Open(lookupFilePath)
 	if err != nil {
 		fmt.Println(Red + Bold +"Airport lookup malformed\n" + Reset)
-		return code
+		return code, ""
 	}
 	//defer to close file and prevent resource leaks, no need to do f.Close() later
 	defer airportLookup.Close()
@@ -180,23 +180,22 @@ func GetNameFromAirportLookup(code string, lookupFilePath string) string {
 	records, err1 := airportLookupReader.ReadAll()
 	if err1 != nil {
 		fmt.Println(Red + Bold +"Airport lookup malformed\n" + Reset)
-		return code
+		return code , ""
 	}
 
 	//loop every records, make a array details with values in each record
 	for i:=1; i< len(records)-1; i++ {
 		for _, details := range records{
-	// details := strings.Split(records[i], ",")
 			// compare with each value with current record
 			for _, data := range details {
 				if data == code {
-					return details[0]
+					return details[0] , details[2]
 				}
 			}
 		}
 		
 	}
-	return code
+	return code, ""
 }
 
 //handeling error with error type
