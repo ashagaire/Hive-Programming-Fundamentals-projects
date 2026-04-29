@@ -1,271 +1,126 @@
-package main
-import ( "fmt"
-		"encoding/csv"
-		"reflect"
-		"bufio"
-		"io"
-		"strings"
-		"regexp"
-		"os"
-		"time") 
+# Itinerary Note Prettifier
+A command-line application that processes admin-generated flight itineraries and transforms them into clear, readable formats for customers.
 
-var Reset = "\033[0m"
-var Red = "\033[31m"
-var Blue = "\033[34m"
-var Bold = "\033[1m"
-var Yellow = "\033[33m"
+<br/>
+<hr style="border: 2px solid blue;">
 
-func main(){
-	if len(os.Args) !=4 || os.Args[1] == "-h" {
-		fmt.Println(Blue + Bold +"itinerary usage:\n go run . ./input.txt ./output.txt ./airport-lookup.csv" + Reset)
- 		return
-	}
 
-	inputFilePath := os.Args[1]
-	outputFilePath := os.Args[2]
-	lookupFilePath := os.Args[3]
+## Source Code and Configuration Files
+```
+prettifier/
+├── main.go            → main program logic
+├── go.mod             → Go module configuration
+├── input.txt          → sample input file
+├── output.txt         → generated output file
+└── airport-lookup.csv → airport codes database
+```
 
-	//check input paths are valid
-	err := ScanFiles(inputFilePath, lookupFilePath)
-	if err != nil {
-		fmt.Println(err)
-		return 
-	}
+## Project Overview 
 
-	//check lookip file is valid
-	checkLookupFile := ScanAirportLookup(lookupFilePath)
-	if checkLookupFile == false {
-		fmt.Println(Red + Bold +"Airport lookup malformed\n" + Reset)
-			return 
-	}
+"Anywhere Holidays" is a brand new online travel agent, finding cheap holidays for their customers. When this company books the flight for customers their system generates the itinerary which is formatted for administrators, and the information is not customer-friendly.
 
-	fmt.Println(Yellow + Bold +"Welcome to Itinerary Formator App!!!\n"+ Reset)
-	processInputFile(inputFilePath, outputFilePath, lookupFilePath)
-}
+This command line tool, reads the text-based itinerary from a file named input.txt, processes the text to make it customer-friendly, and writes the result to a new file output.txt . The processing includes translating the airport code (based on airport lookup  data), converting date and time from ISO 8601 format.
 
-func processInputFile(inputFilePath string, outputFilePath string, lookupFilePath string) {
-	processedText := []string{}
-	inputFile, err1 := os.Open(inputFilePath)
-	if err1 != nil {
-		fmt.Println(Red + Bold +"Input not found\n" + Reset)
-		return
-	} 
-	defer inputFile.Close()
+## How to use
+To run this tool for given original itinerary in input.txt file you will need
+- input.txt file
+- [airport lookup](https://intra.hive.fi/api/file?gitpath=content/coding-fundamentals/coding-fundamentals-go/itinerary/prettifier/_config/resources/airport-lookup.csv)
+- file name for output file (output.txt) 
 
-	// read the file and save in reader
-	reader := bufio.NewReader(inputFile)
+## Setup and Installation
+Installation 
+1.Clone the repository:
+```bash  
+git clone https://gitea.kood.tech/ashagaire/prettifier.git
+cd prettifier
+```
+2.Initialize the Go module:
+```bash  
+go mod init prettifier
+```
 
-	for {
-		// read reader untill new line \n
-		textLine, err := reader.ReadString('\n')
-		if err != nil {
-			if err == io.EOF {
-			break
-			}
-			fmt.Println(Red + Bold +"Input file read error" + Reset)
-			return 
-		}
-		textLine = strings.TrimSuffix(textLine,"\n")
+3.Verify Go is installed:
+```bash
+go version
+```
 
-		// normalize the textLines for different space types like \v, \f, \r whic may return multiple lines
-		normalized := cleanLineBreakChars(textLine)
-		normalizedLines := strings.Split(normalized, "\n")
+### Usage Guide
+```bash
+go run . ./input.txt ./output.txt ./airport-lookup.csv
+```
 
-		for _, line := range normalizedLines {
-			// Step 1: Transformations for airport code and raw date and time values.
-			updatedLines := translateCodes(line, lookupFilePath)
-			
-			//Step 2: Collect the updated lines
-			processedText = append(processedText, updatedLines)
-		}
-	}
+### Arguments
+- input.txt the path to admin generated itinerary file
+- output.txt path with output file name where custumer friendly itinerary will be saved
+- airort-look-up path to the airport codes lookup file
 
-	outputdata := strings.Join(processedText, "\n")
-	re := regexp.MustCompile(`\n{2,}`)
-	finalResult := re.ReplaceAllString(outputdata, "\n\n")
-	//Show formated text in terminal
+### Help Flag
+```bash
+go run . -h
+```
 
-	fmt.Println(Blue + Bold +"Here is your formated Itinary details\n\n" + Reset + finalResult + "\n")
+### Airport Lookup CSV Format 
+The airport lookup file must be a CSV with exactly 6 columns:
+```bash
+name, iso_country, municipality, icao_code, iata_code, coordinates
+```
+<br/>
+<hr style="border: 2px solid blue;">
+<br/>
+## Error Handaling
 
-	err2 := os.WriteFile(outputFilePath, []byte(finalResult), 0644)
-	if err2 !=nil {
-		fmt.Println(Red + Bold +"Error in opeaning output file" + Reset)
-	}
-}
+| Situation  | Output |
+|----------|----------|
+| Wrong number of arguments  | Usage instructions  | 
+| Input fie not found   | Input not found  | 
+| Airport lookup not found   | Airport lookup not found  | 
+| Airport lookup malformed  | Airport lookup malformed  | 
 
-func translateCodes(text string, lookupFilePath string) string {
-	//if word match with any regex replace the word with new replacement 
-	icaoRegex := regexp.MustCompile(`^#([A-Z]{3})([^A-Za-z0-9]|$)`)
-	iataRegex := regexp.MustCompile(`^##([A-Z]{4})([^A-Za-z0-9]|$)`)
-	dateRegex := regexp.MustCompile(`^D\([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}Z\)$`)
-	timeRegex := regexp.MustCompile(`^T12|T24\([0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}.*\)$`)
-	
-	words := strings.Fields(text)
-	for i , word := range words{
-		if icaoRegex.MatchString(word) {
-			words[i] =  cleanAirportCode(word, "#", 3, lookupFilePath)
-		}
-		if iataRegex.MatchString(word) {
-			words[i] =  cleanAirportCode(word, "##", 4, lookupFilePath)
-		}
-		if dateRegex.MatchString(word) {
-			words[i] = cleanDateFormat(word)
-		}
-		if timeRegex.MatchString(word) {
-			words[i] = cleanTimeFormat(word)
-		}
-	}
-	return strings.Join(words, " ")
-}
+In all error cases the output file is never created or overwritten.
+<br/>
+<hr style="border: 2px solid blue;">
+<br/>
 
-func cleanTimeFormat(word string) string {
-	length := len(word)
-	parsedTime := ""
-	timeStamp := word[4:length-1]
-	t, err := time.Parse("2006-01-02T15:04Z07:00", timeStamp)
-		if err != nil {
-		return word
-	}
+## Features and Bonus Functionality
 
-	if word[:3] == "T12" {
-		parsedTime = t.Format("03:04PM")
-	} else if word[:3] == "T24" { 
-		parsedTime = t.Format("15:04")
-	} else {
-		return word
-	}
+### Airport Code Replacement
 
-	if word[length-2] == 'Z'{
-		return parsedTime+" "+"(+00:00)"
-	} else {
-		return parsedTime+" "+"("+ word[20:length-1]+")"
-	}
-}
+Converts IATA and ICAO airport codes into full airport names.
 
-func cleanDateFormat(word string) string {
-	length := len(word)
-	dateStamp := word[2:length-1]
-	d, err := time.Parse("2006-01-02T15:04Z07:00", dateStamp)
-	if err != nil {
-		return word
-	}
-	return (d.Format("02 Jan 2006"))
-}
+IATA codes are preceded by a single #:
+```bash
+#HAJ → Hannover Airport
+```
 
-func cleanAirportCode(word string, prefix string, length int, lookupFilePath string) string {
-	word = strings.TrimPrefix(word, prefix)
-	code := word[:length] //any sign or delimeters afte the airport code from original text
+ICAO codes are preceded by ##:
+```bash
+##EDDW → Bremen Airport
+```
+If an airport code is not found in the lookup file it is left unchanged.
 
-	// find airport name from lookupp file
-	airportName, cityName := GetNameFromAirportLookup(code, lookupFilePath)
-	//in case the code is not found and we keep the lookup code as it is in putput file
-	if code == airportName {
-		return ("##"+code+word[length:])
-	}
-	return airportName+ " "+ cityName+ word[length:]
-}
+### Date and Time Formatting
 
-func GetNameFromAirportLookup(code string, lookupFilePath string) (string, string) {
-	airportLookup, err := os.Open(lookupFilePath)
-	if err != nil {
-		fmt.Println(Red + Bold +"Airport lookup malformed\n" + Reset)
-		return code, ""
-	}
-	//defer to close file and prevent resource leaks, no need to do f.Close() later
-	defer airportLookup.Close()
+Converts ISO 8601 dates and times into customer friendly formats.
+| Input  | Output |
+|----------|----------|
+| D(2022-05-09T08:07Z) | 09 May 2022 | 
+| T12(2022-05-09T08:07Z)   | 08:07AM (+00:00) | 
+| T24(2022-05-09T14:30Z)   | 14:30 (+00:00) | 
 
-	//csv.NewReader to read csv files
-	airportLookupReader := csv.NewReader(airportLookup)
+Zulu time Z is displayed as (+00:00). Malformed dates are left unchanged.
 
-	records, err1 := airportLookupReader.ReadAll()
-	if err1 != nil {
-		fmt.Println(Red + Bold +"Airport lookup malformed\n" + Reset)
-		return code , ""
-	}
+### Whitespace Trimming
+- Converts \v, \f, \r characters to newlines
+- Removes trailing spaces from each line
+- Reduces consecutive blank lines to a maximum of one
 
-	//loop every records, make a array details with values in each record
-	for i:=1; i< len(records)-1; i++ {
-		for _, details := range records{
-			// compare with each value with current record
-			for _, data := range details {
-				if data == code {
-					return details[0] , details[2]
-				}
-			}
-		}
-		
-	}
-	return code, ""
-}
+### Colored Output (Bonus)
+- Welcome Message displayed on yellow in the terminal
+- Usage instructions displayed in blue 
+- Updated itinerary text is also displayed on terminal along with output.txt file
 
-//handeling error with error type
-func ScanFiles(inputFile string, lookupFile string) error {
-	//os.Stat() retrives information about the file or directory
-	_, err1 := os.Stat(inputFile)
-	if err1 != nil {
-		return fmt.Errorf(Red + Bold +"Input not found\n" + Reset)
-	}
+### City Names (Bonus)
+Along with airport name on the updated itinerary file customer can see city names too.
 
-	_, err2 := os.Stat(lookupFile)
-	if err2 != nil {
-		return fmt.Errorf(Red + Bold +"Airport lookup not found\n" + Reset)
-	}
-
-	return nil
-}
-
-func ScanAirportLookup(lookupFile string) bool {
-	indexes := []string{"name", "iso_country","municipality", "icao_code", "iata_code", "coordinates"}
-
-	airportLookup, err := os.Open(lookupFile)
-	if err != nil {
-		return false
-	}
-	//defer to close file and prevent resource leaks, no need to do f.Close() later
-	defer airportLookup.Close()
-
-	//csv.NewReader to read csv files
-	airportLookupReader := csv.NewReader(airportLookup)
-
-	records, err1 := airportLookupReader.ReadAll()
-	if err1 != nil {
-		return false
-	}
-
-	//comparing two string slices with reflect library
-	if !reflect.DeepEqual(indexes, records[0]) {
-		return false
-	}
-
-	checkValues := CheckCsvFileValues(records)
-	if checkValues == false {
-		return false
-	}
-
-	return true
-}
-
-func CheckCsvFileValues( records [][]string) bool {
-	//loop through each row if any data missing
-	for _, row:= range records {
-		if len(row) != 6 {
-			return false
-		}
-		for _, r := range row {
-			if r == "" {
-				return false
-			}
-		}
-	}
-	return true
-}
-
-func cleanLineBreakChars(textLine string) string {
-	// replace the different space types like \v, \f, \r
-	// Using NewReplacer because it  reads through the text in  single pass and only allocates memory once which is more efficient than
-	// calling strings.Replace which will read file searching for for every character type we want to swap seperately, multiple times.
-
-	replacer := strings.NewReplacer("\v", "\n", "\f", "\n", "\r", "\n")
-	result := replacer.Replace(textLine)
-	return result
-}
+### Info
+You can find test input.txt with raw airport codes and date and time in ISO 8601 format. Output fie has the updated custumer friendly itinerary details.

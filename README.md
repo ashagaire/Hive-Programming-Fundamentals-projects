@@ -56,7 +56,7 @@ go run . ./input.txt ./output.txt ./airport-lookup.csv
 
 ### Help Flag
 ```bash
-go run -h
+go run . -h
 ```
 
 ### Airport Lookup CSV Format 
@@ -120,7 +120,7 @@ Zulu time Z is displayed as (+00:00). Malformed dates are left unchanged.
 - Updated itinerary text is also displayed on terminal along with output.txt file
 
 ### City Names (Bonus)
-Along with airport name on the updated itinerary file there are city names also.
+Along with airport name on the updated itinerary file customer can see city names too.
 
 ### Info
 You can find test input.txt with raw airport codes and date and time in ISO 8601 format. Output fie has the updated custumer friendly itinerary details.
