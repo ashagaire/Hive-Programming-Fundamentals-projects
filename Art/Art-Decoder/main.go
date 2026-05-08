@@ -104,3 +104,8 @@ func findClosingBracket(code string, start int ) int{
 	}
 	return 0
 }
+
+// strings.Cut 
+// strconv.Atoi 
+// strings.Repeat 
+// strings.Index 
