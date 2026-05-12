@@ -1,20 +1,55 @@
 package main
 import ( "fmt" 
-		"os"
+		
 		"strconv"
 		"strings"
+		"flag"
+		"bufio"
+		"os"
 			)
 			var Reset = "\033[0m"
 // var Red = "\033[31m"
 var Blue = "\033[34m"
 var Bold = "\033[1m"
 // var Yellow = "\033[33m"
-var art string
+// var art string
 
 func main() {
+		
 	if len(os.Args) !=2 || os.Args[1] == "-h" {
 		fmt.Println(Blue + Bold +"itinerary usage:\n go run . (Your code for Art)" + Reset)
 			return
+	}
+
+	multiLine := flag.Bool("m", false, "enable multiline mode")
+
+	flag.Parse()
+	// Multiline Mode
+	if *multiLine {
+		scanner := bufio.NewScanner(os.Stdin)
+		results := []string{}
+
+		for scanner.Scan() {
+			line := scanner.Text()
+
+			art, err := displayArt( line)
+		
+			if err != nil {
+				fmt.Println(err)
+				return
+			}
+			
+			results = append(results,art)
+			
+			
+			
+		}
+		fmt.Println()
+		for _, result := range results {
+			fmt.Println(result)
+		}
+		return
+	
 	}
 
 	inputArtCode := os.Args[1]
@@ -30,6 +65,7 @@ func main() {
 
 func displayArt( inputArtCode string) (string, error) {
 	code := inputArtCode
+	art := ""
 	
 	for i:= 0 ; i < len(code); i++ {
 		if code[i] == '[' {
