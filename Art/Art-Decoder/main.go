@@ -8,16 +8,17 @@ import ( "fmt"
 		"os"
 			)
 			var Reset = "\033[0m"
-// var Red = "\033[31m"
+var Red = "\033[31m"
 var Blue = "\033[34m"
 var Bold = "\033[1m"
-// var Yellow = "\033[33m"
-// var art string
+var Yellow = "\033[33m"
 
 func main() {
 		
 	if len(os.Args) !=2 || os.Args[1] == "-h" {
-		fmt.Println(Blue + Bold +"itinerary usage:\n go run . (Your code for Art)" + Reset)
+		fmt.Println(Blue + Bold +"\nItinerary usage:\n" + Reset)
+		fmt.Println(Yellow + Bold + "For single line art \n" + Blue + Bold + "go run . (Your code for Art)\n" + Reset)
+		fmt.Println(Yellow + Bold + "For multi line art \n" + Blue + Bold + "go run . -m \n" + Yellow + Bold + "Write your multi line art code and then \"Ctl + D\" (for windows \"Ctl + D\")\n " + Reset)
 			return
 	}
 
@@ -35,13 +36,12 @@ func main() {
 			art, err := displayArt( line)
 		
 			if err != nil {
-				fmt.Println(err)
-				return
+				erroInfo := Red+ Bold + "Error" + Reset
+				results = append(results,erroInfo)
+				continue
 			}
 			
 			results = append(results,art)
-			
-			
 			
 		}
 		fmt.Println()
@@ -55,11 +55,11 @@ func main() {
 	inputArtCode := os.Args[1]
 	art , err := displayArt( inputArtCode)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println(Red+ Bold + err.Error() + Reset)
 		return
 	}
 
-	fmt.Println(art)
+	fmt.Println("\n" + art + "\n")
 	return
 }
 
@@ -72,13 +72,13 @@ func displayArt( inputArtCode string) (string, error) {
 			closingIndex :=strings.Index(code[i:], "]")		
 			if closingIndex == -1 {
 				// Error:error in close bracket not found
-				return "", fmt.Errorf("Error\n")
+				return "", fmt.Errorf("\nError\n")
 			}
 			closingIndex += i
 			text, err := printArt(code[i+1 :closingIndex])
 			if err != nil {
 				// Error: error in text
-				return "", fmt.Errorf("Error\n")
+				return "", fmt.Errorf("\nError\n")
 			}
 			art = art + text
 			i = closingIndex
@@ -93,12 +93,12 @@ func printArt(artPattern string) (string, error) {
 	before, after, found := strings.Cut(artPattern, " ")
 	if found == false {
 		// Error: no valid values inside brackerts
-		return "", fmt.Errorf("Error\n")
+		return "", fmt.Errorf("\nError\n")
 	}
 	repeats, err := strconv.Atoi(before)
 	if err != nil {
 		// Error:first value  is not number
-		return "", fmt.Errorf("Error\n")
+		return "", fmt.Errorf("\nError\n")
 	}
 
 	output := strings.Repeat(after, repeats)
