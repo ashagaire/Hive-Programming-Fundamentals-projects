@@ -1,5 +1,5 @@
 # Art decoder
-A command-line tool that which converts art data into text-based art.
+A command-line tool that converts art data into text-based art.
 
 <br/>
 <hr style="border: 2px solid blue;">
@@ -7,15 +7,15 @@ A command-line tool that which converts art data into text-based art.
 
 ## Project Overview 
 
-A command line tool, wakes a string as an input and converts it into a piece of text-based art.
+A command line tool, which takes string as an input and converts it into a piece of text-based art.
 
 
 ## Setup and Installation
 Installation 
 1.Clone the repository:
 ```bash  
-git clone https://gitea.kood.tech/ashagaire/decoder
-cd decoder
+git clone https://github.com/ashagaire/Hive-Programming-Fundamentals-projects.git
+cd Hive-Programming-Fundamentals-projects/Art/Art-Decoder
 ```
 2.Initialize the Go module:
 ```bash  
@@ -43,11 +43,13 @@ Output
 #####-_-_-_-_-_-#####
 ```
 ### Multi line Art text
-Example
+
 ```
 go run . -m
 ```
-Write your text in terminal and run with "Ctl + D"
+
+Write your text in terminal
+Example
 
 ```
 [8  ]@|\[2 @]
@@ -78,6 +80,3 @@ Output
 ```bash
 go run . -h
 ```
-
-
-## Features and Bonus Functionality
