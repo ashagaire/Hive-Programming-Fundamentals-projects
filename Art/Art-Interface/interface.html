@@ -7,8 +7,37 @@
     <style> </style>
 </head>
 
+
 <body>
-    <p> something here {{ .}}</p>
+    <header>
+        <div class="header">
+            Text based art.
+        </div>
+    </header>
+    <div class="infoCard">
+        this is a text based art application. enter dode for your art.
+        </br>
+        Here is an example:
+
+        <div class="exampleCode">
+            <p>[5 #]</p>
+        </div>
+
+        Here is the art:
+        </br>
+        <div class="exampleCode">
+            <p>#####</p>
+        </div>
+    </div>
+
+    <p> Write Art Code:</p>
+    <form action="/interface" method="post">
+        first:<input type="text" name="artcode">
+        <!-- second:<input type="number" name="second"> -->
+        <input type="submit" value="decode">
+    </form>
+    <p>result: {{ .}}</p>
 </body>
+<footer>Designed and developed by Asha Gaire at Hive Helsinki.</footer>
 
 </html>
