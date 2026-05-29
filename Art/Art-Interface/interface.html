@@ -18,7 +18,7 @@
 
     <div class="info-card">
         <h3>
-            This is a text based art application. enter dode for your art.
+            This is a text based art application. Enter encoded text for your art.
         </h3>
 
         Here is an example on how encode text generates an art:
@@ -54,28 +54,15 @@
         <form action="/interface" method="post">
             <div class="card-container">
                 <textarea class="example-box" name="artcode" rows="20"
-                    placeholder="Paste your multi-line art code here..."></textarea>
+                    placeholder="Paste your multi-line art code here...">{{.Code}}</textarea>
                 <div class="equal-sign">
                     <input class="button" type="submit" value="Decode">
                 </div>
-                <div class="example-box">
-                    <p>result: {{.data.art}}</p>
-                </div>
+                <pre style="padding: 4px;" class="example-box">{{.Art}}</pre>
             </div>
-            <p> something here</p>
-
-
-
-
         </form>
 
-
     </div>
-
-
-
-
-
 
 </body>
 

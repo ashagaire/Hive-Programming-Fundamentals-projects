@@ -4,8 +4,9 @@ import (
 	"net/http"
 			)
 type templateData struct {
-	code string
-	art string
+	Code string
+	Art string
+	Error string
 }
 func encodeHandler (w http.ResponseWriter, req *http.Request) {
 	tpl, err := template.ParseFiles("interface.html")
@@ -24,11 +25,14 @@ func encodeHandler (w http.ResponseWriter, req *http.Request) {
 
 		if err !=nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		data.Code = inputArtCode
+		data.Art = "" 
+		data.Error =  err.Error() 
 		return
 	}
 		// set data for html page
-		data.code = inputArtCode
-		data.art = artdesign 
+		data.Code = inputArtCode
+		data.Art = artdesign 
 
 	} 
 		tpl.Execute(w, data)
