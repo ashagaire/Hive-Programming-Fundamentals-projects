@@ -1,12 +1,12 @@
 package main
+import "fmt"
 
-
-func singlelineDecode(inputArtCode string) string {
+func singlelineDecode(inputArtCode string) (string, error) {
 	art , err := readArtCode( inputArtCode)
 	if err != nil {
 		
-		return "Error"
+		return "", fmt.Errorf("\nError in your art encode text\n")
 	}
 
-	return art
+	return art, nil
 }

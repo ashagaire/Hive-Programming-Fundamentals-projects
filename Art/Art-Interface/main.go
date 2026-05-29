@@ -9,12 +9,17 @@ import (
 
 
 func main() {
-	//SERVER: register  the handaler function from http for root URL path "/"
+	//SERVER
+	// setting files access from local folder named "static"
+	fileServer := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static", fileServer))
+
+	//register  the handaler function from http for root URL path "/"
 	http.HandleFunc("/", encodeHandler)
 
 	fmt.Println("Server is running at http://localhost:8080 ...")
 
-	//SERVER:start the web server on port 8080
+	//start the web server on port 8080
 	err := http.ListenAndServe(":8080", nil)
 	if err != nil {
 		fmt.Println("Error starting server:", err)
