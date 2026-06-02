@@ -58,7 +58,12 @@
                 <div class="equal-sign">
                     <input class="button" type="submit" value="Decode">
                 </div>
+                {{ if .Error }}
+                <pre style="padding: 4px; color: red;" class="example-box">{{.Error}}</pre>
+                {{else}}
+
                 <pre style="padding: 4px;" class="example-box">{{.Art}}</pre>
+                {{ end }}
             </div>
         </form>
 

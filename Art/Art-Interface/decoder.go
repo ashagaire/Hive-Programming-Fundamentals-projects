@@ -1,7 +1,7 @@
 package main
 import "fmt"
 
-func singlelineDecode(inputArtCode string) (string, error) {
+func decoder(inputArtCode string) (string, error) {
 	art , err := readArtCode( inputArtCode)
 	if err != nil {
 		

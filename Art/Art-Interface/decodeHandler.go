@@ -6,9 +6,9 @@ import (
 type templateData struct {
 	Code string
 	Art string
-	Error string
+	Error string 
 }
-func encodeHandler (w http.ResponseWriter, req *http.Request) {
+func decodeHandler (w http.ResponseWriter, req *http.Request) {
 	tpl, err := template.ParseFiles("interface.html")
 	if err !=nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -21,14 +21,15 @@ func encodeHandler (w http.ResponseWriter, req *http.Request) {
 		
 
 		//run the action functions
-		artdesign, err:= singlelineDecode(inputArtCode)
+		artdesign, err:= decoder(inputArtCode)
 
 		if err !=nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+			w.WriteHeader(http.StatusBadRequest)
+		// http.Error(w, err.Error(), http.StatusBadRequest)
 		data.Code = inputArtCode
 		data.Art = "" 
-		data.Error =  err.Error() 
-		return
+		data.Error = "Error:" + err.Error() 
+		
 	}
 		// set data for html page
 		data.Code = inputArtCode

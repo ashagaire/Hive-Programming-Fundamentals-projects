@@ -1,5 +1,5 @@
 # Art Interface
-A web interface for text-based art where you give the text data and it will convert it to a text-based art.
+A web interface for ASCII art where you give the text code data and it will convert it to a ASCII art.
 
 <br/>
 <hr style="border: 2px solid blue;">
@@ -7,7 +7,7 @@ A web interface for text-based art where you give the text data and it will conv
 
 ## Project Overview 
 
-A web interface for text-based art, where you give text as an input and this application converts it into a piece of text-based art.
+A web interface for ASCII art, where you give encoded text as an input and this application converts it into a piece of ASCII art.
 
 
 ## Setup and Installation
@@ -29,8 +29,12 @@ go version
 
 ### Usage Guide
 
-
-### Help Flag
 ```bash
-go run . -h
+go run . 
 ```
+
+```bash 
+Server is running at http://localhost:8080 ...
+```
+
+Check http://localhost:8080 in your browser and try some ASCII art decoding.
