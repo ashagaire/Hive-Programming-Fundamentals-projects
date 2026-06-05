@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title> Interface - Using template </title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style> </style>
+</head>
+
+
+<body>
+    <header>
+        <h1 class="header">
+            Text based art.
+        </h1>
+    </header>
+
+    <div class="info-card">
+        <h3>
+            This is a text based art application. Enter encoded text for your art.
+        </h3>
+
+        Here is an example on how encode text generates an art:
+        <div class="card-container">
+            <div class="example-box">
+                <pre style="padding: 4px;">[8  ]@|\[2 @]
+[7  ]-[2  ][4 @]
+[6  ]/7[3  ][4 @]
+[5  ]/[4  ][6 @]
+[5  ]\-' [8 @]`-[15 _]
+[6  ]-[9 @][13  ]/[4  ]\
+ [7 _]/[4  ]/_[7  ][6 _]/[6  ]|[10 _]-
+/,[10 _]/  `-.[3 _]/,[13 _][10 -]_)</pre>
+            </div>
+
+            <div class="equal-sign">
+                =>
+            </div>
+
+            <div class="example-box">
+                <pre style="padding: 4px;">       @|\@@
+       -  @@@@
+      /7   @@@@
+     /    @@@@@@
+     \-' @@@@@@@@`-_______________
+      -@@@@@@@@@             /    \
+ _______/    /_       ______/      |__________-
+/,__________/  `-.___/,_____________----------_) </pre>
+            </div>
+        </div>
+
+        <p> Encode your own art:</p>
+        <form action="/decoder" method="post">
+            <div class="card-container">
+                <textarea class="example-box" name="artcode" rows="20" wrap="off"
+                    placeholder="Paste your multi-line art code here...">{{.Code}}</textarea>
+                <div class="action">
+
+                    <div class="equal-sign">
+                        <input class="button" type="submit" value="Decode">
+
+                    </div>
+                    {{if .Response}}
+                    {{ if .Error }}
+                    <h3 class="status-not-ok">Staus: {{.Response}}</h3>
+                    {{else}}
+                    <h3 class="status-ok">Staus: {{.Response}}</h3>
+                    {{end}}
+                    {{end}}
+
+                </div>
+
+                {{ if .Error }}
+                <pre style="padding: 4px; color: red;" class="example-box">{{.Error}}</pre>
+                {{else}}
+
+                <pre style="padding: 4px;" class="example-box">{{.Art}}
+                
+                    
+                </pre>
+
+                {{ end }}
+            </div>
+        </form>
+
+    </div>
+
+</body>
+
+</html>

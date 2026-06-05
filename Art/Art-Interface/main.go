@@ -14,7 +14,6 @@ func main() {
 
 	//register  the handaler function from http for root URL path "/"
 	http.HandleFunc("/", decodeHandler)
-
 	fmt.Println("Server is running at http://localhost:8080 ...")
 
 	//start the web server on port 8080

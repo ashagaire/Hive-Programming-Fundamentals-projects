@@ -1,16 +1,26 @@
 package main
+
 import (
 	"html/template"
 	"net/http"
-			)
+)
+
 type templateData struct {
-	Code string
-	Art string
-	Error string 
+	Code     string
+	Art      string
+	Response string
+	Error    string
 }
-func decodeHandler (w http.ResponseWriter, req *http.Request) {
-	tpl, err := template.ParseFiles("interface.html")
-	if err !=nil {
+
+func decodeHandler(w http.ResponseWriter, req *http.Request) {
+	if req.URL.Path != "/" && req.URL.Path != "/decoder" {
+		http.Error(w, "Page not found", http.StatusMethodNotAllowed)
+		return
+
+	}
+	//could be out of function
+	tpl, err := template.ParseFiles("decoder.html")
+	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -18,24 +28,32 @@ func decodeHandler (w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		req.ParseForm()
 		inputArtCode := req.FormValue("artcode")
-		
 
-		//run the action functions
-		artdesign, err:= decoder(inputArtCode)
+		artdesign, err := decoder(inputArtCode)
 
-		if err !=nil {
+		if err != nil {
 			w.WriteHeader(http.StatusBadRequest)
-		// http.Error(w, err.Error(), http.StatusBadRequest)
-		data.Code = inputArtCode
-		data.Art = "" 
-		data.Error = "Error:" + err.Error() 
-		
-	}
-		// set data for html page
-		data.Code = inputArtCode
-		data.Art = artdesign 
+			data.Code = inputArtCode
+			data.Art = ""
+			data.Response = "400"
+			data.Error = err.Error()
+			
+		} else {
 
-	} 
-		tpl.Execute(w, data)
+			// set data for html page
+			data.Code = inputArtCode
+			data.Art = artdesign
+			data.Response = "202"
+
+		}
+
+	}
+	w.WriteHeader(http.StatusAccepted)
+	err = tpl.Execute(w, data)
+	if err != nil {
+		tpl.Execute(w, templateData{Code: "500", Art:"", Response:"shaisse", Error:"Somethng wwetn t wrnng"})
+		return
+	}
+
 	
 }
